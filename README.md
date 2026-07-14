@@ -1,17 +1,17 @@
 <div align="center">
     <img src="./src-tauri/icons/128x128.png" height="128">
     <img src="https://www.vectorlogo.zone/logos/supabase/supabase-icon.svg" height="128" style="margin-left: 16px;">
-    <h1>Cortado <code>x</code> Supabase</h1>
+    <h1>Mocha <code>x</code> Supabase</h1>
     <p>A minimal password manager hand-made using Tauri, Rust, React + Supabase
         </br>Your passwords stay on your machine, synced to your own cloud
     </p>
-    <img src="https://img.shields.io/github/repo-size/hunixcode/hotcortado" />
-    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/hunixcode/hotcortado">
+    <img src="https://img.shields.io/github/repo-size/hunixcode/hotmocha" />
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/hunixcode/hotmocha">
 </div>
 
 # Overview
 
-Cortado is my take on a password manager that does exactly what it should and
+Mocha is my take on a password manager that does exactly what it should and
 nothing more : a very simple encrypted vault, protected by a master
 password, synced to your own Supabase instance. Feel free to open an issue if you
 find something I could potentially work on.
@@ -30,10 +30,11 @@ find something I could potentially work on.
 - Search across name, username and URL, combined with the active folder
 - Copy-to-clipboard and show/hide passwords
 - Tiny footprint : Tauri uses the OS webview, no bundled Chromium (~3–5 MB binary)
+- **In-app setup** — configure your Supabase credentials directly from the UI, no `.env` file needed
 
 ## Setup your own instance
 
-This section walks you through everything from zero to a running Cortado app on
+This section walks you through everything from zero to a running Mocha app on
 your machine. Take your time — the Supabase part is the only non-trivial step.
 
 ### 1. Prerequisites
@@ -65,54 +66,36 @@ You need three things installed on your machine:
 
 ### 2. Create a Supabase project (free)
 
-Cortado uses [Supabase](https://supabase.com) to store your encrypted vault in
+Mocha uses [Supabase](https://supabase.com) to store your encrypted vault in
 the cloud. You get 1 GB of storage for free — more than enough for a password
 manager.
 
 1. **Sign up** at [app.supabase.com](https://app.supabase.com) (email, GitHub,
    or Google).
 2. **Create a new project** — pick any name and region close to you. Set a
-   database password (you won't need it for Cortado, just pick something random).
+   database password (you won't need it for Mocha, just pick something random).
 3. Wait a minute for the project to finish initializing.
 
-### 3. Create the storage bucket
+### 3. Create the storage bucket and get your API keys
 
-Cortado stores the vault file in a Supabase Storage bucket called `vaults`.
+Mocha stores the vault file in a Supabase Storage bucket called `vaults`.
 
 1. In your Supabase dashboard, go to **Storage** in the left sidebar.
 2. Click **New bucket**.
 3. Name it exactly **`vaults`**.
 4. Toggle **Public bucket** OFF (the vault should stay private).
 5. Click **Create bucket**.
-
-### 4. Create the API keys
-
-1. In your Supabase dashboard, go to **Project Settings** (gear icon, bottom
-   left) → **API**.
-2. Copy the **Project URL** — it looks like
+6. Go to **Project Settings** (gear icon, bottom left) → **API**.
+7. Copy the **Project URL** — it looks like
    `https://xxxxxxxx.supabase.co`.
-3. Copy the **anon / publishable key** — it's a long string starting with
+8. Copy the **anon / publishable key** — it's a long string starting with
    `eyJ...`.
 
-### 5. Clone the repo and set up environment variables
+### 4. Clone the repo and run
 
 ```bash
-git clone https://github.com/hunixcode/hotcortado.git
-cd hotcortado
-```
-
-Create a `.env` file at the project root with the two values you just copied:
-
-```bash
-VITE_SUPABASE_URL=https://xxxxxxxx.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-> **Tip:** The key can also be called `VITE_SUPABASE_ANON_KEY` — both work.
-
-### 6. Install and run
-
-```bash
+git clone https://github.com/hunixcode/hotmocha.git
+cd hotmocha
 npm install
 npm run tauri dev
 ```
@@ -120,7 +103,28 @@ npm run tauri dev
 The first run compiles all Rust dependencies and takes a few minutes. Subsequent
 runs are fast.
 
-When the app opens, click **Sign up** to create your account, then **Create
+### 5. Enter your Supabase credentials
+
+When the app opens, you'll see a **Setup required** page with a form. Paste the
+**Project URL** and **anon key** you copied from your Supabase dashboard, then
+click **Save & restart**.
+
+> Credentials are stored locally on your machine (localStorage). They are never
+> sent anywhere other than your own Supabase project.
+
+Alternatively, you can create a `.env` file at the project root (takes priority
+over the in-app form):
+
+```bash
+VITE_SUPABASE_URL=https://xxxxxxxx.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+> The key can also be called `VITE_SUPABASE_ANON_KEY` — both work.
+
+### 6. Create your account and vault
+
+After the app restarts, click **Sign up** to create your account, then **Create
 vault** to set your master password. Your vault is now encrypted and synced to
 your Supabase storage.
 
@@ -137,15 +141,15 @@ Outputs land in `src-tauri/target/release/bundle/` (`.msi`/`.exe` on Windows,
 
 ### Authentication flow
 
-1. On launch, Cortado checks for an active Supabase session.
+1. On launch, Mocha checks for an active Supabase session.
 2. If no session, you see the **Sign in / Sign up** screen. Authentication uses
    Supabase Auth (email + password).
-3. After signing in, Cortado checks if a vault exists in Supabase Storage.
+3. After signing in, Mocha checks if a vault exists in Supabase Storage.
 
 ### Vault encryption
 
 The vault is an encrypted JSON blob stored in Supabase Storage under your user
-ID at `vaults/<user-id>/vault.cortado`. The file holds three base64 fields: a
+ID at `vaults/<user-id>/vault.mocha`. The file holds three base64 fields: a
 random 16-byte salt, a random 12-byte nonce, and the ciphertext.
 
 1. When you create or unlock the vault, a 32-byte key is derived from your master
@@ -167,7 +171,7 @@ decrypted.
 ### Code layout
 
 ```
-hotcortado/
+hotmocha/
 ├── index.html                  Entry HTML for the webview
 ├── package.json                Node dependencies and scripts
 ├── tsconfig.json               TypeScript configuration
@@ -224,7 +228,7 @@ in Bitwarden under *Tools → Import data*, format *Bitwarden (json)*.
 **Import** accepts an unencrypted Bitwarden `.json` export (in Bitwarden : *Tools →
 Export vault*, format *.json* — encrypted exports are rejected). Only login items
 (`"type": 1`) are imported ; cards, identities and secure notes are skipped.
-Bitwarden folders become Cortado folders, and imported entries are merged into the
+Bitwarden folders become Mocha folders, and imported entries are merged into the
 existing vault. The expected file shape :
 
 ```json
