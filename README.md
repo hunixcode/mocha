@@ -1,12 +1,14 @@
 <div align="center">
-    <img src="./src-tauri/icons/128x128.png" height="128">
-    <img src="https://www.vectorlogo.zone/logos/supabase/supabase-icon.svg" height="128" style="margin-left: 16px;">
+    <div>
+        <img src="./src-tauri/icons/128x128.png">
+        <img src="https://www.vectorlogo.zone/logos/supabase/supabase-icon.svg" width="128px">
+    </div>
     <h1>Mocha <code>x</code> Supabase</h1>
     <p>A minimal password manager hand-made using Tauri, Rust, React + Supabase
         </br>Your passwords stay on your machine, synced to your own cloud
     </p>
-    <img src="https://img.shields.io/github/repo-size/hunixcode/hotmocha" />
-    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/hunixcode/hotmocha">
+    <img src="https://img.shields.io/github/repo-size/hunixcode/mocha" />
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/hunixcode/mocha">
 </div>
 
 # Overview
