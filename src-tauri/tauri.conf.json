@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Cortado",
+  "productName": "Mocha",
   "version": "1.0.0",
-  "identifier": "com.cortado.app",
+  "identifier": "com.mocha.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,11 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "Cortado — Password Manager",
+        "title": "Mocha — Password Manager",
         "width": 920,
         "height": 640,
         "minWidth": 720,
-        "minHeight": 520
+        "minHeight": 520,
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {

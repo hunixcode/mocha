@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { User } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
+import { supabase, supabaseReady, saveSupabaseConfig } from "./supabase";
 import { Entry } from "./types";
 import "./App.css";
 
@@ -63,7 +64,49 @@ function Logo({ size = 40 }: { size?: number }) {
   );
 }
 
-const VAULT_PATH = "vault.cortado";
+const VAULT_PATH = "vault.mocha";
+
+type ResizeDir = "North" | "South" | "East" | "West" | "NorthEast" | "NorthWest" | "SouthEast" | "SouthWest";
+
+const CURSOR_MAP: Record<ResizeDir, string> = {
+  North: "n-resize",
+  South: "s-resize",
+  East: "e-resize",
+  West: "w-resize",
+  NorthEast: "ne-resize",
+  NorthWest: "nw-resize",
+  SouthEast: "se-resize",
+  SouthWest: "sw-resize",
+};
+
+function ResizeHandle({ dir, className }: { dir: ResizeDir; className?: string }) {
+  return (
+    <div
+      className={`resize-handle ${className ?? ""}`}
+      style={{ cursor: CURSOR_MAP[dir] }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        getCurrentWindow().startResizeDragging(dir);
+      }}
+    />
+  );
+}
+
+function ResizeHandles() {
+  return (
+    <>
+      <ResizeHandle dir="North" className="rh-top" />
+      <ResizeHandle dir="South" className="rh-bottom" />
+      <ResizeHandle dir="West" className="rh-left" />
+      <ResizeHandle dir="East" className="rh-right" />
+      <ResizeHandle dir="NorthWest" className="rh-tl" />
+      <ResizeHandle dir="NorthEast" className="rh-tr" />
+      <ResizeHandle dir="SouthWest" className="rh-bl" />
+      <ResizeHandle dir="SouthEast" className="rh-br" />
+    </>
+  );
+}
 
 async function uploadVault(userId: string, blob: string) {
   const { error } = await supabase.storage
@@ -108,8 +151,35 @@ export default function App() {
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [moveEntry, setMoveEntry] = useState<Entry | null>(null);
   const [moveFolder, setMoveFolder] = useState("");
+  const [setupUrl, setSetupUrl] = useState("");
+  const [setupKey, setSetupKey] = useState("");
+  const [setupError, setSetupError] = useState("");
+  const [setupSaving, setSetupSaving] = useState(false);
+
+  function startDrag(e: React.MouseEvent) {
+    if ((e.target as HTMLElement).closest("button, input, textarea, a")) return;
+    getCurrentWindow().startDragging();
+  }
+
+  function handleSetup(e: FormEvent) {
+    e.preventDefault();
+    setSetupError("");
+    const url = setupUrl.trim();
+    const key = setupKey.trim();
+    if (!url) return setSetupError("Project URL is required.");
+    if (!key) return setSetupError("API key is required.");
+    try {
+      new URL(url);
+    } catch {
+      return setSetupError("Invalid URL. Make sure it includes https://");
+    }
+    setSetupSaving(true);
+    saveSupabaseConfig(url, key);
+    window.location.reload();
+  }
 
   useEffect(() => {
+    if (!supabaseReady) return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
@@ -343,7 +413,7 @@ export default function App() {
   async function handleExport() {
     try {
       const path = await save({
-        defaultPath: "cortado-bitwarden.json",
+        defaultPath: "mocha-bitwarden.json",
         filters: [{ name: "JSON", extensions: ["json"] }],
       });
       if (!path) return;
@@ -384,9 +454,114 @@ export default function App() {
     setShowPw(true);
   }
 
+  if (!supabaseReady) {
+    return (
+      <div className="gate">
+        <ResizeHandles />
+        <div className="gate-drag" onMouseDown={startDrag}>
+          <div className="window-controls gate-wc">
+            <button className="wc-btn" onClick={() => getCurrentWindow().minimize()} aria-label="Minimize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="1" fill="currentColor" rx="0.5"/></svg>
+            </button>
+            <button className="wc-btn" onClick={() => getCurrentWindow().toggleMaximize()} aria-label="Maximize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+            </button>
+            <button className="wc-btn wc-close" onClick={() => getCurrentWindow().close()} aria-label="Close">
+              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div className="gate-card setup-card">
+          <div className="logo">
+            <Logo size={44} />
+          </div>
+          <h1>Setup required</h1>
+          <p className="tagline">
+            Mocha needs a Supabase project to store your vault.
+          </p>
+          <div className="setup-steps">
+            <div className="setup-step">
+              <span className="step-num">1</span>
+              <div>
+                <strong>Create a Supabase project</strong>
+                <p>Go to <a href="https://app.supabase.com" target="_blank" rel="noreferrer">app.supabase.com</a> and create a free project.</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">2</span>
+              <div>
+                <strong>Create a storage bucket</strong>
+                <p>In Storage, create a bucket named <code>vaults</code> (private).</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">3</span>
+              <div>
+                <strong>Get your API keys</strong>
+                <p>In Project Settings &rarr; API, copy the <em>Project URL</em> and <em>anon key</em>.</p>
+              </div>
+            </div>
+            <div className="setup-step">
+              <span className="step-num">4</span>
+              <div>
+                <strong>Enter your credentials below</strong>
+                <p>Paste the values you just copied.</p>
+              </div>
+            </div>
+          </div>
+          <form className="setup-form" onSubmit={handleSetup}>
+            <label>
+              Project URL
+              <input
+                type="url"
+                placeholder="https://your-project.supabase.co"
+                value={setupUrl}
+                onChange={(e) => setSetupUrl(e.target.value)}
+                autoFocus
+              />
+            </label>
+            <label>
+              Anon / Publishable Key
+              <input
+                type="password"
+                placeholder="eyJhbGci..."
+                value={setupKey}
+                onChange={(e) => setSetupKey(e.target.value)}
+              />
+            </label>
+            {setupError && <div className="error">{setupError}</div>}
+            <div className="row end">
+              <button type="submit" className="btn primary" disabled={setupSaving}>
+                {setupSaving ? "Saving…" : "Save & restart"}
+              </button>
+            </div>
+          </form>
+          <p className="setup-hint">
+            Credentials are stored locally on your machine. You can also set them
+            in a <code>.env</code> file at the project root.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (screen === "loading") {
     return (
       <div className="gate">
+        <ResizeHandles />
+        <div className="gate-drag" onMouseDown={startDrag}>
+          <div className="window-controls gate-wc">
+            <button className="wc-btn" onClick={() => getCurrentWindow().minimize()} aria-label="Minimize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="1" fill="currentColor" rx="0.5"/></svg>
+            </button>
+            <button className="wc-btn" onClick={() => getCurrentWindow().toggleMaximize()} aria-label="Maximize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+            </button>
+            <button className="wc-btn wc-close" onClick={() => getCurrentWindow().close()} aria-label="Close">
+              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
         <div className="logo">
           <Logo size={44} />
         </div>
@@ -398,11 +573,25 @@ export default function App() {
     const signing = authMode === "signin";
     return (
       <div className="gate">
+        <ResizeHandles />
+        <div className="gate-drag" onMouseDown={startDrag}>
+          <div className="window-controls gate-wc">
+            <button className="wc-btn" onClick={() => getCurrentWindow().minimize()} aria-label="Minimize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="1" fill="currentColor" rx="0.5"/></svg>
+            </button>
+            <button className="wc-btn" onClick={() => getCurrentWindow().toggleMaximize()} aria-label="Maximize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+            </button>
+            <button className="wc-btn wc-close" onClick={() => getCurrentWindow().close()} aria-label="Close">
+              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
         <form className="gate-card" onSubmit={handleAuth}>
           <div className="logo">
             <Logo size={44} />
           </div>
-          <h1>Cortado</h1>
+          <h1>Mocha</h1>
           <p className="tagline">
             {signing
               ? "Sign in to access your vault."
@@ -446,6 +635,20 @@ export default function App() {
     const creating = screen === "create";
     return (
       <div className="gate">
+        <ResizeHandles />
+        <div className="gate-drag" onMouseDown={startDrag}>
+          <div className="window-controls gate-wc">
+            <button className="wc-btn" onClick={() => getCurrentWindow().minimize()} aria-label="Minimize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="1" fill="currentColor" rx="0.5"/></svg>
+            </button>
+            <button className="wc-btn" onClick={() => getCurrentWindow().toggleMaximize()} aria-label="Maximize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+            </button>
+            <button className="wc-btn wc-close" onClick={() => getCurrentWindow().close()} aria-label="Close">
+              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
         <form
           className="gate-card"
           onSubmit={creating ? handleCreate : handleUnlock}
@@ -453,7 +656,7 @@ export default function App() {
           <div className="logo">
             <Logo size={44} />
           </div>
-          <h1>Cortado</h1>
+          <h1>Mocha</h1>
           <p className="tagline">
             {creating
               ? "Set a master password to encrypt your vault."
@@ -488,12 +691,13 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="topbar">
+      <ResizeHandles />
+      <header className="topbar" onMouseDown={startDrag}>
         <div className="brand">
           <span className="logo-sm">
             <Logo size={20} />
           </span>{" "}
-          Cortado
+          Mocha
           <span className="count">
             {entries.length} {entries.length === 1 ? "entry" : "entries"}
           </span>
@@ -511,6 +715,17 @@ export default function App() {
           <button className="btn primary" onClick={handleLock}>
             Lock
           </button>
+          <div className="window-controls" onClick={(e) => e.stopPropagation()}>
+            <button className="wc-btn" onClick={() => getCurrentWindow().minimize()} aria-label="Minimize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="1" fill="currentColor" rx="0.5"/></svg>
+            </button>
+            <button className="wc-btn" onClick={() => getCurrentWindow().toggleMaximize()} aria-label="Maximize">
+              <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+            </button>
+            <button className="wc-btn wc-close" onClick={() => getCurrentWindow().close()} aria-label="Close">
+              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -860,7 +1075,7 @@ export default function App() {
           >
             <h2>Import from Bitwarden</h2>
             <p>
-              Cortado imports <strong>unencrypted Bitwarden JSON exports</strong>
+              Mocha imports <strong>unencrypted Bitwarden JSON exports</strong>
               . In Bitwarden, go to <em>Tools → Export vault</em> and choose the{" "}
               <em>.json</em> format (not <em>.json (Encrypted)</em> — encrypted
               exports are rejected).
@@ -887,7 +1102,7 @@ export default function App() {
             <p className="modal-hint">
               Only login items (<code>"type": 1</code>) are imported — cards,
               identities and secure notes are skipped. Bitwarden folders are
-              imported as Cortado folders. Imported entries are added to your
+              imported as Mocha folders. Imported entries are added to your
               existing vault.
             </p>
             <div className="row end">

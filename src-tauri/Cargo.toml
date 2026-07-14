@@ -1,11 +1,11 @@
 [package]
-name = "cortado"
+name = "mocha"
 version = "1.0.0"
-description = "Cortado — a minimal coffee-themed password manager"
+description = "Mocha — a minimal coffee-themed password manager"
 edition = "2021"
 
 [lib]
-name = "cortado_lib"
+name = "mocha_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

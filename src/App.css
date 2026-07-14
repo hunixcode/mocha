@@ -1,22 +1,22 @@
-/* Cortado — clean professional theme */
+/* Mocha — dark coffee theme */
 
 :root {
-  --bg: #f5f4f1;
-  --surface: #ffffff;
-  --surface-alt: #faf9f7;
-  --border: #e4e1db;
-  --border-strong: #d4d0c8;
-  --ink: #201c17;
-  --ink-soft: #6e6860;
-  --ink-faint: #9b958c;
-  --accent: #54402e;
-  --accent-hover: #3e2f21;
-  --accent-soft: #efe9e2;
-  --danger: #b23a2f;
-  --danger-soft: #f9e9e7;
+  --bg: #1a1512;
+  --surface: #241e19;
+  --surface-alt: #1f1914;
+  --border: #3a312a;
+  --border-strong: #4a3f35;
+  --ink: #f0ebe5;
+  --ink-soft: #b5a99a;
+  --ink-faint: #7a6e60;
+  --accent: #c8956c;
+  --accent-hover: #a67a52;
+  --accent-soft: #2e2520;
+  --danger: #e05a4a;
+  --danger-soft: #3a201c;
   --radius: 8px;
-  --shadow-sm: 0 1px 2px rgba(32, 28, 23, 0.06);
-  --shadow-md: 0 4px 16px rgba(32, 28, 23, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
@@ -47,7 +47,7 @@
   }
 }
 
-html, body, #root { height: 100%; }
+html, body, #root { height: 100%; border-radius: 10px; overflow: hidden; }
 
 body {
   background: var(--bg);
@@ -66,13 +66,14 @@ input, textarea {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   background: var(--surface);
+  color: var(--ink);
   outline: none;
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 input::placeholder, textarea::placeholder { color: var(--ink-faint); }
 input:focus, textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(84, 64, 46, 0.12);
+  box-shadow: 0 0 0 3px rgba(200, 149, 108, 0.15);
 }
 textarea { resize: vertical; }
 
@@ -104,6 +105,20 @@ textarea { resize: vertical; }
   display: grid;
   place-items: center;
   background: var(--bg);
+  position: relative;
+}
+.gate-drag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  cursor: default;
+}
+.gate-wc {
+  position: absolute;
+  top: 6px;
+  right: 8px;
 }
 .gate-card {
   width: 360px;
@@ -136,6 +151,81 @@ textarea { resize: vertical; }
 }
 .gate-card .btn { margin-top: 4px; padding: 9px 14px; }
 
+/* ---------- setup page ---------- */
+.setup-card { text-align: left; max-width: 440px; }
+.setup-card h1 { text-align: center; }
+.setup-card .tagline { text-align: center; }
+.setup-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+.setup-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+.setup-step strong { font-size: 13px; }
+.setup-step p { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.setup-step a { color: var(--accent); }
+.setup-step a:hover { text-decoration: underline; }
+.setup-step code {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 11px;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--accent);
+}
+.setup-hint {
+  font-size: 12px;
+  color: var(--ink-faint);
+  text-align: center;
+  margin-top: 4px;
+}
+.setup-hint code {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 11px;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--accent);
+}
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ---------- resize handles ---------- */
+.resize-handle {
+  position: fixed;
+  z-index: 20;
+}
+.rh-top    { top: 0;    left: 8px;  right: 8px;  height: 4px; }
+.rh-bottom { bottom: 0; left: 8px;  right: 8px;  height: 4px; }
+.rh-left   { top: 8px;  bottom: 8px; left: 0;    width: 4px; }
+.rh-right  { top: 8px;  bottom: 8px; right: 0;   width: 4px; }
+.rh-tl { top: 0;    left: 0;    width: 8px;  height: 8px; }
+.rh-tr { top: 0;    right: 0;   width: 8px;  height: 8px; }
+.rh-bl { bottom: 0; left: 0;    width: 8px;  height: 8px; }
+.rh-br { bottom: 0; right: 0;   width: 8px;  height: 8px; }
+
 /* ---------- vault layout ---------- */
 .app { height: 100%; display: flex; flex-direction: column; }
 
@@ -144,8 +234,10 @@ textarea { resize: vertical; }
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
+  padding-right: 8px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  cursor: default;
 }
 .brand {
   font-size: 15px;
@@ -162,7 +254,29 @@ textarea { resize: vertical; }
   border-radius: 999px;
   padding: 2px 10px;
 }
-.actions { display: flex; gap: 8px; }
+.actions { display: flex; gap: 8px; align-items: center; }
+
+/* ---------- window controls ---------- */
+.window-controls {
+  display: flex;
+  gap: 2px;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+}
+.wc-btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  transition: background 0.1s, color 0.1s;
+}
+.wc-btn:hover { background: var(--accent-soft); color: var(--ink); }
+.wc-close:hover { background: var(--danger); color: #fff; }
 
 .body { flex: 1; display: flex; min-height: 0; }
 
@@ -228,7 +342,8 @@ textarea { resize: vertical; }
 .item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .item.active {
   background: var(--surface);
-  border-color: var(--border-strong);
+  border-color: var(--accent);
+  border-left: 3px solid var(--accent);
   box-shadow: var(--shadow-sm);
 }
 .item-text {
@@ -343,13 +458,13 @@ label {
   gap: 12px;
   color: var(--ink-faint);
 }
-.placeholder .logo { color: var(--border-strong); }
+.placeholder .logo { color: var(--ink-faint); }
 
 /* ---------- modal ---------- */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(32, 28, 23, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   display: grid;
   place-items: center;
   padding: 24px;
@@ -405,8 +520,9 @@ label {
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--ink);
-  color: #fff;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
   padding: 8px 18px;
   border-radius: 999px;
   font-size: 13px;

@@ -319,5 +319,5 @@ pub fn run() {
             import_bitwarden
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Cortado");
+        .expect("error while running Mocha");
 }
