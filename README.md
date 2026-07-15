@@ -4,6 +4,7 @@
         <img src="https://www.vectorlogo.zone/logos/supabase/supabase-icon.svg" width="128px">
     </div>
     <h1>Mocha <code>x</code> Supabase</h1>
+    <i><p>Forked from <a href="https://github.com/hunixcode/cortado">cortado</a></p></i>
     <p>A minimal password manager hand-made using Tauri, Rust, React + Supabase
         </br>Your passwords stay on your machine, synced to your own cloud
     </p>
