@@ -5,6 +5,24 @@ export interface Entry {
   password: string;
   url: string;
   notes: string;
-  /** Folder name; empty string means unfiled. */
   folder: string;
+}
+
+export interface TOTPAccount {
+  id: string;
+  issuer: string;
+  secret: string;
+  createdAt: string;
+}
+
+export interface Subscription {
+  id: string;
+  name: string;
+  category: string;
+  cost: number;
+  currency: string;
+  billingCycle: "monthly" | "yearly" | "quarterly" | "weekly";
+  nextBilling: string;
+  notes: string;
+  createdAt: string;
 }
