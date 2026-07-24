@@ -1,9 +1,6 @@
 <div align="center">
-  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#c8956c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 8h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V8z"/>
-    <path d="M15 9.5h1.5a2.5 2.5 0 0 1 0 5H15"/>
-    <path d="M5 21h12"/>
-  </svg>
+  
+  <img src="icon.svg"/>
   <h1>Mocha Suite</h1>
   <p>A personal suite of privacy tools — password manager, authenticator, subscriptions.</p>
   <p>Built with Tauri, Rust, React + Supabase</p>
